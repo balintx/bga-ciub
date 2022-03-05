@@ -4,7 +4,7 @@
 
 //require('_ide.php');
 
-class LocationDB
+abstract class LocationDB extends Table
 {
     /**
      * @return mixed
@@ -40,7 +40,7 @@ class LocationDB
     }
 }
 
-class CardDB
+abstract class CardDB extends Table
 {
     /**
      * @return Card[]
@@ -120,7 +120,7 @@ class CardDB
     }
 }
 
-class CubeDB
+abstract class CubeDB extends Table
 {
     public static function allCubes($numPlayers) : array
     {
