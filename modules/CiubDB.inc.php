@@ -75,17 +75,26 @@ abstract class CardDB extends Table
         }
         //\Ciub::DbQuery('INSERT INTO cards (fileID, cardLetter, isOwl, victoryPoints, requiredDices) VALUES ' . implode(', ', $valueLines) . ';'); */
     }
-
-    public static function isAt(Card $card, $location)
+    
+    /**
+     * @param Card\fileID $card_id
+     */
+    public static function isAt($card_id, $location)
     {
-        return LocationDB::getItemLocation('card', $card->fileID) == $location;
+        return LocationDB::getItemLocation('card', $card_id) == $location;
     }
 
-    public static function moveTo(Card $card, $location)
+    /**
+     * @param Card\fileID $card_id
+     */
+    public static function moveTo($card_id, $location)
     {
-        LocationDB::setItemLocation($location, 'card', $card->fileID);
+        LocationDB::setItemLocation($location, 'card', $card_id);
     }
 
+    /**
+     * @return Card\fileID[]
+     */
     public static function getCardsAt($location)
     {
         $dbResult = LocationDB::getItemsAt($location, 'card');
@@ -96,22 +105,23 @@ abstract class CardDB extends Table
             $ids[] = $resultArray['item_id'];
         }
 
-        return self::getCardsByFileID($ids);
+        return $ids;
+        //return self::getCardsByFileID($ids);
     }
 
     /**
      * Finds whether the card has a token on it.
      * 
-     * @param Card $card
+     * @param Card\fileID $card_id
      * @param int $by_playerid (optional) if provided, this function returns true only if this player's token is on the card
      * @return bool
      */
-    public static function hasToken(Card $card, $by_playerid = NULL)
+    public static function hasToken($card_id, $by_playerid = NULL)
     {
         return
             count(
                 array_filter(
-                    LocationDB::getItemsAt('card_' . $card->fileID, 'token'),
+                    LocationDB::getItemsAt('card_' . $card_id, 'token'),
                     function($item) use ($by_playerid) { 
                         return $by_playerid === NULL || $item['item_id'] == $by_playerid;
                     }
