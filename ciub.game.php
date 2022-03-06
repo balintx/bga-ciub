@@ -1,21 +1,30 @@
 <?php
 
- /**
-  *------
-  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
-  * Ciub implementation : © <Your name here> <Your email address here>
-  * 
-  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
-  * See http://en.boardgamearena.com/#!doc/Studio for more information.
-  * -----
-  * 
-  * ciub.game.php
-  *
-  * This is the main file for your game logic.
-  *
-  * In this PHP file, you are going to defines the rules of the game.
-  *
-  */
+/*
+
+    BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+    BGA-Ciub: a Board Game Arena implementation of the board game Ciúb
+    Copyright (C) 2022  Balint Ruszki <balintx@balAAAAAAintx.me> (Remove the uppercase A-s)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    This code has been produced on the BGA studio platform for use on
+    http://boardgamearena.com
+
+    See http://en.boardgamearena.com/#!doc/Studio for more information.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+*/
 
 //require('misc/_ide.php');
 
@@ -108,8 +117,8 @@ class Ciub extends Table
 		// Create deck
 		$starterDeck = DeckGenerator::Generate($numPlayers, $isShortGame, NULL, 'bga_rand');
 		array_walk($starterDeck, function(&$card) { $card = $card['fileID']; });
-		$starterDeck = CardDB::getCardsByFileID(...$starterDeck);
-		CardDB::createCards($starterDeck);
+		//$starterDeck = CardDB::getCardsByFileID(...$starterDeck);
+		CardDB::createCards(array_reverse($starterDeck));
 
 		// Fill bottom and top row with cards
 		for ($i = 0; $i <= $numPlayers; $i++)
@@ -188,6 +197,20 @@ class Ciub extends Table
         In this space, you can put any utility methods useful for your game logic
     */
 
+	function refillTopRow()
+	{
+		$item = LocationDB::getFirstItemAt('deck', 'card');
+		if (!$item)
+			return;
+
+		$card_id = $item['item_id'];
+
+		if ($card_id == 0) // Opus Magnum does not get refilled
+			return;
+
+		LocationDB::setItemLocation('row_top', 'card', $card_id);
+		self::notifyAllPlayers('cardMoved', '', ['card_id' => $card_id, 'previous_location' => 'deck', 'new_location' => 'row_top']);
+	}
 
 //////////////////////////////////////////////////////////////////////////////
 //////////// Player actions
@@ -231,7 +254,7 @@ class Ciub extends Table
 		{
 			case 10: // p1PromptDecideAction
 				// ${you} can place your token or remove one card from the top row
-				
+
 				$this->gamestate->nextState('p1PromptPlaceToken');
 			break;
 
@@ -306,15 +329,31 @@ class Ciub extends Table
 		}
 	}
 
-	function p1DoPlaceToken()
+	function p1DoPlaceToken($card_id)
 	{
 		self::checkAction('p1DoPlaceToken');
 		switch ($this->gamestate->state_id())
 		{
 			case 11: // p1PromptPlaceToken
 				// ${you} place your token on a spell card
+				$playerId = self::getCurrentPlayerId();
+				
+				if (LocationDB::getItemLocation('card', $card_id) != 'row_top')
+				{
+					throw new BgaUserException(self::_("Target card is not in the top row"));
+				}
+				
+				if (count(LocationDB::getItemsAt('card_'.$card_id, 'token')) > 0)
+				{
+					throw new BgaUserException(self::_("That card has a token"));
+				}
+
+				LocationDB::setItemLocation('card_' . $card_id, 'token', $playerId);
+				self::notifyAllPlayers('tokenPlaced', clienttranslate('${player_name} has placed his/her token on a card'), ['player_id' => $playerId,
+				'player_name' => self::getActivePlayerName(), 'card_id' => $card_id]);
 				
 				$this->gamestate->nextState('p2Roll');
+				
 			break;
 
 			default:
@@ -325,15 +364,32 @@ class Ciub extends Table
 		}
 	}
 
-	function p1DoRemoveTopCard()
+	function p1DoRemoveTopCard($card_id)
 	{
 		self::checkAction('p1DoRemoveTopCard');
 		switch ($this->gamestate->state_id())
 		{
 			case 12: // p1PromptRemoveTopCard
 				// ${you} remove a spell card from the top row
+				$playerId = self::getCurrentPlayerId();
+
+				if (LocationDB::getItemLocation('card', $card_id) != 'row_top')
+				{
+					throw new BgaUserException(self::_("Target card is not in the top row"));
+				}
+
+				if (CardDB::hasToken($card_id))
+				{
+					throw new BgaUserException(self::_("That card has a token"));
+				}
+
+				CardDB::moveTo($card_id, 'void');
+				self::notifyAllPlayers('topCardRemoved', clienttranslate('${player_name} has removed a card from the top row'), ['player_id' => $playerId, 'player_name' => self::getActivePlayerName(), 'card_id' => $card_id]);
 				
-				$this->gamestate->nextState('p2Roll');
+				self::refillTopRow();
+
+				//$this->gamestate->nextState('p2Roll');
+				$this->gamestate->nextState('p1PromptDecideAction');
 			break;
 
 			default:

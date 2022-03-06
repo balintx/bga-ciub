@@ -1,5 +1,29 @@
 <?php
+/*
 
+    BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
+    BGA-Ciub: a Board Game Arena implementation of the board game Ciúb
+    Copyright (C) 2022  Balint Ruszki <balintx@balAAAAAAintx.me> (Remove the uppercase A-s)
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published
+    by the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    
+    This code has been produced on the BGA studio platform for use on
+    http://boardgamearena.com
+
+    See http://en.boardgamearena.com/#!doc/Studio for more information.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+*/
 //namespace CiubGame;
 
 //require('_ide.php');
@@ -16,12 +40,28 @@ abstract class LocationDB extends Table
 
     public static function setItemLocation($new_location, $item_type, $item_id)
     {
-        \Ciub::DbQuery(sprintf("UPDATE item_locations SET location = '%s' WHERE item_type = '%s' AND item_id = '%s'", $new_location, $item_type, $item_id));
+        \Ciub::DbQuery(sprintf("DELETE FROM item_locations WHERE item_type = '%s' AND item_id = '%s'", $item_type, $item_id));
+        self::createItem($item_type, $item_id, $new_location);
     }
 
     public static function createItem($item_type, $item_id, $location = 'void')
     {
         \Ciub::DbQuery(sprintf("INSERT INTO item_locations (item_type, item_id, location) VALUES ('%s', '%s', '%s')", $item_type, $item_id, $location));
+    }
+
+    /**
+     * Retrieve the last item at the specified location
+     * 
+     * @param mixed $location
+     * @param mixed $item_type (optional) Only return the specified item types
+     * @return array The item at the specified location
+     */
+    public static function getFirstItemAt($location, $item_type = NULL)
+    {
+        if ($item_type !== NULL)
+            $item_type = " AND item_type = '".$item_type."'";
+
+        return \Ciub::getObjectFromDB(sprintf("SELECT item_type, item_id FROM item_locations WHERE location = '%s'".$item_type.' ORDER BY id LIMIT 1', $location));
     }
 
     /**
@@ -63,15 +103,15 @@ abstract class CardDB extends Table
 
     /**
      * Inserts card ids into location database
-     * @param Card[] $cards
+     * @param array $card_ids
      */
-    public static function createCards($cards)
+    public static function createCards($card_ids)
     {
         //$valueLines = []; // deprecated, we do not need to store static info into SQL
-        foreach ($cards as $card)
+        foreach ($card_ids as $card_id)
         {// 'INSERT INTO cards (fileID, cardLetter, isOwl, victoryPoints, requiredDices) VALUES (';
             //$valueLines[] = sprintf("('%s', '%s', '%b', '%s', '%s')", $card->fileID, $card->cardLetter, $card->isOwl, $card->victoryPoints, $card->requiredDices);
-            LocationDB::createItem('card', $card->fileID, 'deck');
+            LocationDB::createItem('card', $card_id, 'deck');
         }
         //\Ciub::DbQuery('INSERT INTO cards (fileID, cardLetter, isOwl, victoryPoints, requiredDices) VALUES ' . implode(', ', $valueLines) . ';'); */
     }
