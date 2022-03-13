@@ -190,7 +190,7 @@ $machinestates = array(
   array (
     'name' => 'p2Roll',
     'description' => clienttranslate('${actplayer} is rolling dies that are not in his/her dice tray'),
-    'descriptionmyturn' => clienttranslate('${you} i rolling dies that are not in your dice tray'),
+    'descriptionmyturn' => clienttranslate('${you} roll dices that are not in your dice tray'),
     'type' => 'game',
     'transitions' => 
     array (
