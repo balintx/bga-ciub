@@ -27,6 +27,10 @@
 //namespace CiubGame;
 
 // "fileID" => 0, "cardLetter" => "D", "isOwl" => false, "victoryPoints" => 5, "requiredDices" => "8"
+/**
+ * 
+ * @deprecated an array is enough to represent any card since no values can change
+ */
 class Card
 {
     public $fileID;

@@ -188,6 +188,28 @@ class Cube
         return $this;
     }
 
+    /**
+     * Checks if there are any rules against adjusting the cube to the specified face
+     * with an "adjust face" action
+     * 
+     * @param CubeFaces $face the desired face
+     * @param Cube $initiator the cube with the "Adjust face" action
+     * @return bool 
+     */
+    public function isValidAdjust($face, $initiator)
+    {
+        if ($face == $this->getFace())
+            return false;
+
+        if (!in_array($face, $this->getAllFaces()))
+            return false;
+
+        if ($initiator->getId() !== $this->getId())
+            return true;
+
+        return !in_array($face, CubeFaces::Invalid_Adjusts_Self);
+    }
+
     public function __toString()
     {
         return json_encode([
@@ -218,6 +240,17 @@ final class CubeFaces
     const Action_Swap = 10;
     const Action_Reroll = 11;
     const Action_Adjust = 12;
+
+    const All_DiceActions = [
+        self::Action_Adjust,
+        self::Action_Reroll,
+        self::Action_Swap
+    ];
+
+    const Invalid_Adjusts_Self = [
+        self::Action_Swap,
+        self::Action_Reroll
+    ];
 }
 
 final class CubeColors
@@ -344,12 +377,22 @@ class BlueCube extends Cube
 }
 
 /*
+
 // Test CubeFactory
+$TEST_CUBE_GREEN = CubeFactory::createFromId('cube_'.CubeColors::Green.'_3');
+$TEST_CUBE_PURPLE = CubeFactory::createFromId('cube_'.CubeColors::Purple.'_3');
 assert(CubeFactory::createFromId('cube_'.CubeColors::Orange.'_3') instanceof OrangeCube);
 assert(CubeFactory::createFromId('cube_'.CubeColors::Pink.'_3') instanceof PinkCube);
 assert(CubeFactory::createFromId('cube_'.CubeColors::Blue.'_3') instanceof BlueCube);
-assert(CubeFactory::createFromId('cube_'.CubeColors::Green.'_3') instanceof GreenCube);
-assert(CubeFactory::createFromId('cube_'.CubeColors::Purple.'_3') instanceof PurpleCube);
+assert($TEST_CUBE_GREEN instanceof GreenCube);
+assert($TEST_CUBE_PURPLE instanceof PurpleCube);
 assert(CubeFactory::createFromId('cube_'.CubeColors::Yellow.'_3') instanceof YellowCube);
 assert(CubeFactory::createFromId('cube_'.CubeColors::White.'_3') instanceof WhiteCube);
+$TEST_CUBE_PURPLE->setFace(CubeFaces::Action_Adjust);
+assert($TEST_CUBE_PURPLE->isValidAdjust(CubeFaces::Action_Adjust, $TEST_CUBE_GREEN) === false);
+assert($TEST_CUBE_PURPLE->isValidAdjust(CubeFaces::Action_Skull, $TEST_CUBE_GREEN) === true);
+assert($TEST_CUBE_GREEN->isValidAdjust(CubeFaces::Action_Reroll, $TEST_CUBE_PURPLE) === true);
+assert($TEST_CUBE_GREEN->isValidAdjust(CubeFaces::Action_Reroll, $TEST_CUBE_GREEN) === false);
+assert($TEST_CUBE_GREEN->isValidAdjust(CubeFaces::Numeric_1, $TEST_CUBE_PURPLE) === false);
+
 */

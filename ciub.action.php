@@ -125,7 +125,8 @@ public function jmp_skipP2DiceActionPhase()
 public function jmp_p2DiceAction()
 {
 	self::setAjaxMode();
-	$this->game->jmp_p2DiceAction();
+	$cube_id = self::getArg( "cube_id", AT_alphanum, true );
+	$this->game->jmp_p2DiceAction($cube_id);
 	self::ajaxResponse();
 }
 
