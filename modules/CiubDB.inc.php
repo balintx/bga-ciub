@@ -233,6 +233,23 @@ abstract class CubeDB extends APP_DBObject
         }
         self::DbQuery('INSERT INTO cubes (id, is_action_active, is_active, current_face) VALUES ' . implode(', ', $valueLines).';');
     }
+
+    /**
+     * 
+     * @param string $location
+     * @return Cube[]
+     */
+    public static function getCubesAt($location, $include_inactive_cubes = false, $include_action_inactive_cubes = true)
+    {
+        $cubes = self::getCubes(LocationDB::getItemsAt($location, 'cube'));
+
+        return array_filter($cubes,
+            function(Cube $cube) use ($include_inactive_cubes, $include_action_inactive_cubes) {
+                return ($include_inactive_cubes || $cube->isActive()) && ($include_action_inactive_cubes || $cube->isActionActive());
+            }
+        );
+    }
+
     /**
      * @param array $ids List of cube ids
      * @return Cube[]
