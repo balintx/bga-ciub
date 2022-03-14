@@ -229,7 +229,7 @@ class Ciub extends Table
 	function moveCard($card_id, $location)
 	{
 		//$previousLocation = LocationDB::getItemLocation('card', $location);
-		LocationDB::setItemLocation('row_top', 'card', $card_id);
+		LocationDB::setItemLocation($location, 'card', $card_id);
 		self::notifyAllPlayers('cardMoved', '', ['card_id' => $card_id, 'previous_location' => 'deck', 'new_location' => 'row_top']);
 	}
 
