@@ -256,7 +256,7 @@ abstract class CubeDB extends APP_DBObject
      */
     public static function getCubes($ids)
     {
-        $db = self::getObjectListFromDB('SELECT id, is_action_active, is_active, current_face FROM cubes WHERE id IN ('.implode(',', $ids).') ');
+        $db = self::getObjectListFromDB('SELECT id, is_action_active, is_active, current_face FROM cubes WHERE id IN (\''.implode("','", $ids).'\') ');
         foreach ($db as $cubeData)
         {
             $cube = CubeFactory::createFromId($cubeData['id']);

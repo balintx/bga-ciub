@@ -140,14 +140,16 @@ public function p2UndoDiceAction()
 public function p2DoDiceActionReRollDie()
 {
 	self::setAjaxMode();
-	$this->game->p2DoDiceActionReRollDie();
+	$cube_id = self::getArg( "cube_id", AT_alphanum, true );
+	$this->game->p2DoDiceActionReRollDie($cube_id);
 	self::ajaxResponse();
 }
 
 public function p2DoDiceActionSwapDie()
 {
 	self::setAjaxMode();
-	$this->game->p2DoDiceActionSwapDie();
+	$cube_id = self::getArg( "cube_id", AT_alphanum, true );
+	$this->game->p2DoDiceActionSwapDie($cube_id);
 	self::ajaxResponse();
 }
 

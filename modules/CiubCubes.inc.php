@@ -32,7 +32,7 @@ class CubeFactory
     {
         list($type, $color, $id) = explode('_', $item_id);
         if ($type != 'cube')
-            throw new \Exception("item type '$type' unknown for ".__CLASS__ ." (expected: 'cube')");
+            throw new BgaVisibleSystemException("item type '$type' unknown for ".__CLASS__ ." (expected: 'cube')");
 
         $color = filter_var($color, FILTER_SANITIZE_NUMBER_INT);
         $id = filter_var($id, FILTER_SANITIZE_NUMBER_INT);
@@ -61,7 +61,7 @@ class CubeFactory
                 $cube = new YellowCube;
             break;
             default:
-                throw new \Exception("Unknown color ($color) for cube '$item_id'");
+                throw new BgaVisibleSystemException("Unknown color ($color) for cube '$item_id'");
             break;
         }
         $cube->setId('cube_'.$color.'_'.$id);
