@@ -33,6 +33,8 @@
 -- Example 2: add a custom field to the standard "player" table
 ALTER TABLE `player` ADD `player_won_card` tinyint(1);
 ALTER TABLE `player` ADD `player_saveswap` tinyint(1);
+ALTER TABLE `player` ADD `player_restore` varchar(290);
+
 
 CREATE TABLE IF NOT EXISTS `item_locations` (
   `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,

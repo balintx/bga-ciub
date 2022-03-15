@@ -313,6 +313,18 @@ abstract class PlayerDB extends APP_DBObject
             return (bool)self::getUniqueValueFromDB("SELECT player_won_card FROM players WHERE player_id = '".$player_id."'");
         }
     }
+
+    public static function saveCubes($player_id)
+    {
+        self::DbQuery(sprintf("UPDATE players SET player_restore = '%s' WHERE player_id = '%s'", implode(',', LocationDB::getItemsAt('dicetray_'.$player_id)), $player_id));
+    }
+
+    public static function getSavedCubes($player_id)
+    {
+        CubeDB::getCubes(
+            explode(',', self::getUniqueValueFromDB("SELECT player_restore FROM players WHERE player_id = '".$player_id."'"))
+        );
+    }
 }
 
 /*
