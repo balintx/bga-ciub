@@ -287,6 +287,34 @@ abstract class CubeDB extends APP_DBObject
         );
     }
 }
+
+abstract class PlayerDB extends APP_DBObject
+{
+    public static function mustSave($player_id, $set_flag = NULL)
+    {
+        if ($set_flag !== NULL)
+        {
+            self::DbQuery(sprintf("UPDATE players SET player_saveswap = '%b' WHERE player_id = '%s'", $set_flag, $player_id));
+        }
+        else
+        {
+            return (bool)self::getUniqueValueFromDB("SELECT player_saveswap FROM players WHERE player_id = '".$player_id."'");
+        }
+    }
+
+    public static function wonCard($player_id, $set_flag = NULL)
+    {
+        if ($set_flag !== NULL)
+        {
+            self::DbQuery(sprintf("UPDATE players SET player_won_card = '%b' WHERE player_id = '%s'", $set_flag, $player_id));
+        }
+        else
+        {
+            return (bool)self::getUniqueValueFromDB("SELECT player_won_card FROM players WHERE player_id = '".$player_id."'");
+        }
+    }
+}
+
 /*
 // Test: DeckGenerator::$FullDeck fileID is the same as the position in array for all cards
 require('CiubDecks.inc.php');
