@@ -577,8 +577,8 @@ $machinestates = array(
   80 => 
   array (
     'name' => 'p3WinOpus',
-    'description' => clienttranslate('"${actplayer} wins the Opus Magnum'),
-    'descriptionmyturn' => clienttranslate('"${you} win the Opus Magnum'),
+    'description' => clienttranslate('${actplayer} wins the Opus Magnum'),
+    'descriptionmyturn' => clienttranslate('${you} win the Opus Magnum'),
     'type' => 'game',
     'transitions' => 
     array (

@@ -620,7 +620,7 @@ class Ciub extends Table
 				if ($initDiceId != $targetDiceId)
 				{
 					self::moveCube($initDice, 'player_'.$activePlayer);
-					self::notifyAllPlayers('diceaction_reroll', clienttranslate('${player_name} used {cube_1} to reroll {cube_2} to {cube_3}'),
+					self::notifyAllPlayers('diceaction_reroll', clienttranslate('${player_name} used ${cube_1} to reroll ${cube_2} to ${cube_3}'),
 						[
 							'player_id' => $activePlayer, 'player_name' => $this->getActivePlayerName(),
 						 	'init_color' => $initDice->getColor(),
@@ -631,7 +631,7 @@ class Ciub extends Table
 				}
 				else
 				{
-					self::notifyAllPlayers('diceaction_reroll_self', clienttranslate('${player_name} used {cube_1} to reroll itself to {cube_2}'),
+					self::notifyAllPlayers('diceaction_reroll_self', clienttranslate('${player_name} used ${cube_1} to reroll itself to ${cube_2}'),
 					[
 						'player_id' => $activePlayer, 'player_name' => $this->getActivePlayerName(),
 					 	'target_color' => $initDice->getColor(),
@@ -679,7 +679,7 @@ class Ciub extends Table
 				$targetDice->setActionInactive();
 				self::sendCubeUpdate($targetDice, false);
 				PlayerDB::mustSave($activePlayer, false);
-				self::notifyAllPlayers('diceaction_swap', clienttranslate('${player_name} has swapped {cube_1} to a {color} cube'),
+				self::notifyAllPlayers('diceaction_swap', clienttranslate('${player_name} has swapped ${cube_1} to a ${color} cube'),
 					[
 						'player_id' => $activePlayer, 'player_name' => $this->getActivePlayerName(),
 					 	'cube_color' => $initDice->getColor(),
@@ -749,7 +749,7 @@ class Ciub extends Table
 				$targetDice = $dices[$targetDiceId];
 
 				if (!$targetDice->isValidAdjust($face, $initDice))
-					throw new BgaUserException("You cannot adjust to that face");
+					throw new BgaUserException(self::_("You cannot adjust to that face"));
 
 				$initDice->setActionInactive();
 				self::sendCubeUpdate($initDice, false);
@@ -762,7 +762,7 @@ class Ciub extends Table
 				if ($initDiceId == $targetDiceId)
 				{
 					self::moveCube($targetDice, 'dicetray_'.$activePlayer);
-					self::notifyAllPlayers('diceaction_adjust_self', clienttranslate('${player_name} has adjusted {cube_1} to {cube_2} and put it in his/her dice tray'),
+					self::notifyAllPlayers('diceaction_adjust_self', clienttranslate('${player_name} has adjusted ${cube_1} to ${cube_2} and put it in his/her dice tray'),
 						[
 							'player_id' => $activePlayer, 'player_name' => $this->getActivePlayerName(),
 							'cube_color' => $initDice->getColor(),
@@ -774,7 +774,7 @@ class Ciub extends Table
 				{
 					self::moveCube($targetDice, 'player_'.$activePlayer);
 					self::moveCube($initDice, 'player_'.$activePlayer);
-					self::notifyAllPlayers('diceaction_adjust', clienttranslate('${player_name} has adjusted {cube_1} to {cube_2} and put ${cube_3} in his/her dice tray'),
+					self::notifyAllPlayers('diceaction_adjust', clienttranslate('${player_name} has adjusted ${cube_1} to ${cube_2} and put ${cube_3} in his/her dice tray'),
 						[
 							'player_id' => $activePlayer, 'player_name' => $this->getActivePlayerName(),
 							'cube_color' => $initDice->getColor(),
