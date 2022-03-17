@@ -202,21 +202,24 @@ public function p3DoWinSpellCard()
 public function p3DoRefillBottomAndTopRow()
 {
 	self::setAjaxMode();
-	$this->game->p3DoRefillBottomAndTopRow();
+	$card_id = self::getArg( "card_id", AT_posint, true );
+	$this->game->p3DoRefillBottomAndTopRow($card_id);
 	self::ajaxResponse();
 }
 
 public function p3DoGainBonusDice()
 {
 	self::setAjaxMode();
-	$this->game->p3DoGainBonusDice();
+	$cube_id = self::getArg( "cube_id", AT_alphanum, true );
+	$this->game->p3DoGainBonusDice($cube_id);
 	self::ajaxResponse();
 }
 
 public function p3DoReduceToFive()
 {
 	self::setAjaxMode();
-	$this->game->p3DoReduceToFive();
+	$cube_ids = self::getArg( "cube_ids", AT_alphanum, true );
+	$this->game->p3DoReduceToFive($cube_ids);
 	self::ajaxResponse();
 }
 
@@ -237,14 +240,16 @@ public function p3Undo()
 public function p3DoTradeDices()
 {
 	self::setAjaxMode();
-	$this->game->p3DoTradeDices();
+	$cube_ids = self::getArg( "cube_ids", AT_alphanum, true );
+	$this->game->p3DoTradeDices($cube_ids);
 	self::ajaxResponse();
 }
 
 public function p3DoTradeForWhite()
 {
 	self::setAjaxMode();
-	$this->game->p3DoTradeForWhite();
+	$cube_ids = self::getArg( "cube_ids", AT_alphanum, true );
+	$this->game->p3DoTradeForWhite($cube_ids);
 	self::ajaxResponse();
 }
 
@@ -258,7 +263,8 @@ public function jmp_chkCanP3TradeForWhite()
 public function p3DoDiscardDices()
 {
 	self::setAjaxMode();
-	$this->game->p3DoDiscardDices();
+	$cube_ids = self::getArg( "cube_ids", AT_alphanum, true );
+	$this->game->p3DoDiscardDices($cube_ids);
 	self::ajaxResponse();
 }
 

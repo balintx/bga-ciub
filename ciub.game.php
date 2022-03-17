@@ -255,7 +255,7 @@ class Ciub extends Table
 	function checkCubeLocation($cube_id, $valid_locations)
 	{
 		if (!in_array(LocationDB::getItemLocation('cube', $cube_id), $valid_locations, true))
-			throw new BgaUserException(self::_('You cannot target that cube'));
+			throw new BgaUserException(self::_('You cannot target that dice'));
 	}
 
 	function moveCard($card_id, $location)
@@ -539,7 +539,7 @@ class Ciub extends Table
 				self::checkCubeLocation($cube_id, ['player_'.$activePlayer]);
 				$cube = CubeDB::getCubes([$cube_id])[$cube_id];
 				if (!$cube->isActive())
-					throw new BgaUserException(self::_("You cannot target that cube"));
+					throw new BgaUserException(self::_("You cannot target that dice"));
 				if (!$cube->isActionActive())
 					throw new BgaUserException(self::_("That dice has no active action"));
 				if (!in_array($cube->getFace(), CubeFaces::All_DiceActions))
@@ -808,13 +808,13 @@ class Ciub extends Table
 				// ${you} may place dices into your dice tray		
 
 				$activePlayer = self::getActivePlayerId();
-				$diceIds = explode(',', $diceIds);
+				$diceIds = explode(' ', $diceIds);
 				$dices = CubeDB::getCubes($diceIds);
 				$valid = false;
 				foreach ($dices as $dice)
 				{
 					if (!$dice->isActive())
-						throw new BgaUserException(self::_('You cannot target that cube'));
+						throw new BgaUserException(self::_('You cannot target that dice'));
 
 					self::checkCubeLocation($dice->getId(), 'player_'.$activePlayer);
 					self::moveCube($dice->getId(), 'dicetray_'.$activePlayer);
@@ -822,11 +822,11 @@ class Ciub extends Table
 				
 				}
 				if (!$valid)
-					throw new BgaUserException(self::_('Please select at least one cube'));
+					throw new BgaUserException(self::_('Please select at least one dice'));
 
 				PlayerDB::mustSave($activePlayer, false);
 
-				self::notifyAllPlayers('dicetraySaved', '${player_name} has placed ${dices} in his/her dice tray',
+				self::notifyAllPlayers('dicetraySaved', clienttranslate('${player_name} has placed ${dices} in his/her dice tray'),
 					[
 						'player_id' => $activePlayer,
 						'player_name' => $this->getActivePlayerName(),
@@ -870,7 +870,7 @@ class Ciub extends Table
 		{
 			case 60: // p3PromptSelectWonSpell
 				// ${you} can cast a spell and gain that spell card
-				self::notifyAllPlayers('cardwinSkip', '${player_name} has chosen not to win a spell card', ['player_name' => $this->getActivePlayerName(), 'player_id' => $this->getActivePlayerId()]);
+				self::notifyAllPlayers('cardwinSkip', clienttranslate('${player_name} has chosen not to win a spell card'), ['player_name' => $this->getActivePlayerName(), 'player_id' => $this->getActivePlayerId()]);
 
 				$this->gamestate->nextState('p3PromptBonusDice');
 			break;
@@ -897,7 +897,7 @@ class Ciub extends Table
 					self::throwInvalidCardTarget();
 
 				self::moveCard($card_id, 'player_'.$activePlayer);
-				self::notifyAllPlayers('cardWon', '${player_name} has won ${spell_card}',
+				self::notifyAllPlayers('cardWon', clienttranslate('${player_name} has won ${spell_card}'),
 					[
 						'player_name' => $this->getActivePlayerName(),
 						'player_id' => $activePlayer,
@@ -916,14 +916,27 @@ class Ciub extends Table
 		}
 	}
 
-	function p3DoRefillBottomAndTopRow()
+	function arg_RefillBottomRow()
+	{
+		return LocationDB::getItemsAt('row_top', 'card');
+	}
+
+	function p3DoRefillBottomAndTopRow($card_id)
 	{
 		self::checkAction('p3DoRefillBottomAndTopRow');
 		switch ($this->gamestate->state_id())
 		{
 			case 81: // p3PromptRefillBottomRow
 				// ${you} must move a spell card from the top row to the bottom row
-				
+				if (LocationDB::getItemLocation('card', $card_id) != 'row_top')
+					throw new BgaUserException(self::_('You cannot target that card (it is not in the top row)'));
+
+				self::moveCard($card_id, 'row_bottom');
+				self::notifyAllPlayers('bottomRefilled', clienttranslate('${player_name} has moved ${card} from the top to the bottom row'),
+					['player_name' => self::getActivePlayerName(), 'player_id' => self::getActivePlayerId(), 'card_id' => $card_id]);
+
+				self::refillTopRow();
+
 				$this->gamestate->nextState('chkHasP3MoreThanFive');
 			break;
 
@@ -935,14 +948,20 @@ class Ciub extends Table
 		}
 	}
 
-	function p3DoGainBonusDice()
+	function p3DoGainBonusDice($cube_id)
 	{
 		self::checkAction('p3DoGainBonusDice');
 		switch ($this->gamestate->state_id())
 		{
 			case 61: // p3PromptBonusDice
 				// ${you} gain an extra dice for not casting any spells
-				
+				self::checkCubeLocation($cube_id, ['summarycard']);
+				$activePlayer = self::getActivePlayerId();
+
+				self::moveCube($cube_id, 'player_'.$activePlayer);
+				self::notifyAllPlayers('bonusDice', clienttranslate('${player_name} has received a bonus ${color} dice'),
+					['player_name' => self::getActivePlayerName(), 'player_id' => self::getActivePlayerId(), 'color' => $cube_id[5], 'i18n' => ['color']]);
+
 				$this->gamestate->nextState('chkCanP3Trade');
 			break;
 
@@ -954,14 +973,35 @@ class Ciub extends Table
 		}
 	}
 
-	function p3DoReduceToFive()
+	function arg_ReduceToFive()
+	{
+		$activePlayer = self::getActivePlayerId();
+		return count(LocationDB::getItemsAt('player_'.$activePlayer)) + count(LocationDB::getItemsAt('dicetray_'.$activePlayer)) - 5;
+	}
+
+	function p3DoReduceToFive($cube_ids)
 	{
 		self::checkAction('p3DoReduceToFive');
 		switch ($this->gamestate->state_id())
 		{
 			case 63: // p3PromptReduceToFive
 				// ${you} must give back ${count} dice(s)
-				
+				$cubeIds = explode(' ', $cube_ids);
+				$expectedReduce = self::arg_ReduceToFive();
+				if (count($cubeIds) != $expectedReduce)
+					throw new BgaUserException(sprintf(self::_("You must select exactly %d cubes to reduce your cubes to five"), $expectedReduce));
+
+				$activePlayer = self::getActivePlayerId();
+
+				foreach ($cubeIds as $id)
+				{
+					self::checkCubeLocation($id, ['player_'.$activePlayer, 'dicetray_'.$activePlayer]);
+					self::moveCube($id, 'summarycard');
+				}
+
+				self::notifyAllPlayers('reduce', clienttranslate('${player_name} has placed ${dice} back to the summary card'),
+					['player_name' => self::getActivePlayerName(), 'player_id' => $activePlayer, 'cube_ids' => $cubeIds]);
+
 				$this->gamestate->nextState('chkCanP3Trade');
 			break;
 
@@ -980,7 +1020,9 @@ class Ciub extends Table
 		{
 			case 65: // p3PromptWantTrade
 				// ${you} can trade one dice for two other dices
-				
+				if (count(self::arg_tradeForWhite()) == 0 || count(self::arg_availableWhites()) == 0)
+					throw new BgaUserException(self::_('You cannot trade any dices at the moment'));
+
 				$this->gamestate->nextState('chkCanP3TradeForWhite');
 			break;
 
@@ -1023,7 +1065,7 @@ class Ciub extends Table
 		}
 	}
 
-	function p3DoTradeDices()
+	function p3DoTradeDices($dice_ids)
 	{
 		self::checkAction('p3DoTradeDices');
 		switch ($this->gamestate->state_id())
@@ -1042,14 +1084,38 @@ class Ciub extends Table
 		}
 	}
 
-	function p3DoTradeForWhite()
+	function p3DoTradeForWhite($cube_ids)
 	{
 		self::checkAction('p3DoTradeForWhite');
 		switch ($this->gamestate->state_id())
 		{
 			case 67: // p3PromptTradeForWhite
 				// ${you} can trade any dice for white dice
-				
+				$cubeIds = explode(' ', $cube_ids);
+				if (count($cubeIds) == 0)
+					throw new BgaUserException(self::_('Please select at least one dice'));
+
+				$activePlayer = self::getActivePlayerId();
+
+				$whites = self::arg_availableWhites();
+				$logWhites = $whites;
+				if (count($whites) < count($cubeIds))
+					throw new BgaUserException(sprintf(self::_('You can only select a maximum of %d dice(s) at this time (amount of white dices on the summary card)'), count($whites)));
+
+				foreach ($cubeIds as $id)
+				{
+					self::checkCubeLocation($id, ['player_'.$activePlayer, 'dicetray_'.$activePlayer]);
+					if ($id[5] == CubeColors::White)
+						throw new BgaUserException(self::_('You cannot target that dice'));
+
+					$white = array_pop($whites);
+					self::moveCube($id, 'summarycard');
+					self::moveCube($white, 'player_'.$activePlayer);
+				}
+
+				self::notifyAllPlayers('trade', clienttranslate('${player_name} has traded ${dice} for ${dice2}'),
+					['player_name' => self::getActivePlayerName(), 'player_id' => $activePlayer, 'cube_ids' => $cubeIds, 'cube_ids2' => $logWhites]);
+
 				$this->gamestate->nextState('chkLimitsP3');
 			break;
 
@@ -1068,7 +1134,9 @@ class Ciub extends Table
 		{
 			case 69: // p3PromptDiscardDices
 				// ${you} can have a maximum of ${count} ${color} dices
-				
+				$whites = LocationDB::getItemsAt('summarycard', 'cube');
+				$whites = array_filter($whites, function ($cube_id) { return $cube_id[5] == CubeColors::White; });
+				//if (count($whites))
 				$this->gamestate->nextState('chkCanP3TradeForWhite');
 			break;
 
@@ -1080,14 +1148,25 @@ class Ciub extends Table
 		}
 	}
 
-	function p3DoDiscardDices()
+	function p3DoDiscardDices($cube_ids)
 	{
 		self::checkAction('p3DoDiscardDices');
 		switch ($this->gamestate->state_id())
 		{
 			case 69: // p3PromptDiscardDices
 				// ${you} can have a maximum of ${count} ${color} dices
-				
+				$cubeIds = explode(' ', $cube_ids);
+				$activePlayer = self::getActivePlayerId();
+
+				foreach ($cubeIds as $id)
+				{
+					self::checkCubeLocation($id, ['player_'.$activePlayer, 'dicetray_'.$activePlayer]);
+					self::moveCube($id, 'summarycard');
+				}
+
+				self::notifyAllPlayers('reduce', clienttranslate('${player_name} has placed ${dice} back to the summary card'),
+					['player_name' => self::getActivePlayerName(), 'player_id' => $activePlayer, 'cube_ids' => $cubeIds]);
+
 				$this->gamestate->nextState('chkLimitsP3');
 			break;
 
@@ -1305,7 +1384,10 @@ class Ciub extends Table
 				$this->gamestate->nextState('chkHasP3MoreThanFive');
 			break;
 			default:
-				$this->gamestate->nextState('p3PromptRefillBottomRow');
+				if (count(self::arg_RefillBottomRow()) > 0)
+					$this->gamestate->nextState('p3PromptRefillBottomRow');
+				else
+					$this->gamestate->nextState('chkHasP3MoreThanFive');
 			break;
 		}
 	}
@@ -1377,7 +1459,8 @@ class Ciub extends Table
 				self::moveCube($id, 'dicetray_'.$activePlayer);
 		}
 		
-		self::notifyAllPlayers('diceTrayRestore', '${actplayer} restores their dice tray and starts over', ['player_name' => self::getActivePlayerName(), 'player_id' => $activePlayer]);
+		self::notifyAllPlayers('diceTrayRestore', 
+			clienttranslate('${actplayer} restores their dice tray and starts over'), ['player_name' => self::getActivePlayerName(), 'player_id' => $activePlayer]);
 		
 		if (PlayerDB::wonCard($activePlayer))
 			$this->gamestate->nextState('chkHasP3MoreThanFive');
@@ -1388,10 +1471,22 @@ class Ciub extends Table
 	function stchkCanP3TradeForWhite()
 	{
 		// Checking if player has any non-white dices
-		if (count(self::arg_tradeForWhite()) > 0)
+		if (count(self::arg_tradeForWhite()) > 0 && count(self::arg_availableWhites()) > 0)
 			$this->gamestate->nextState('p3PromptTradeForWhite');
 		else
 			$this->gamestate->nextState('chkLimitsP3');
+	}
+
+	function arg_availableWhites()
+	{
+		return
+			array_filter(
+				LocationDB::getItemsAt('summarycard', 'cube'),
+				function ($cube_id) {
+					return $cube_id[5] == CubeColors::White;
+				}
+			)
+		;
 	}
 	
 	function arg_tradeForWhite()
