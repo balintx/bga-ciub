@@ -180,22 +180,27 @@ abstract class CardDB extends APP_DBObject
     }
 
     /**
-     * Finds whether the card has a token on it.
+     * Finds whether the card has a token on it (optionally by another player).
      * 
-     * @param int $by_playerid (optional) if provided, this function returns true only if this player's token is on the card
+     * @param int $exclude_playerid (optional) if provided, this function returns true only if another player's token is on the card
      * @return bool
      */
-    public static function hasToken($card_id, $by_playerid = NULL)
+    public static function hasToken($card_id, $exclude_playerid = NULL)
     {
-        return
-            count(
-                array_filter(
-                    LocationDB::getItemsAt('card_' . $card_id, 'token'),
-                    function($id) use ($by_playerid) { 
-                        return $by_playerid === NULL || $id == $by_playerid;
-                    }
-                )
-            ) > 0;
+        $token = LocationDB::getFirstItemAt('card_'.$card_id, 'token');
+        /*
+
+        token   |  playerid |  expect
+        -----------------------------
+        1             1        false   token != playerid is false
+        1             2        true    \
+        1            null      true    | => token != playerid is true  
+        null          1        false   / - only mismatch is when token is null
+        null         null      false   token != playerid is false
+
+        */
+
+        return $token != $exclude_playerid && $token;
     }
 }
 
@@ -321,9 +326,7 @@ abstract class PlayerDB extends APP_DBObject
 
     public static function getSavedCubes($player_id)
     {
-        CubeDB::getCubes(
-            explode(',', self::getUniqueValueFromDB("SELECT player_restore FROM players WHERE player_id = '".$player_id."'"))
-        );
+        return explode(',', self::getUniqueValueFromDB("SELECT player_restore FROM players WHERE player_id = '".$player_id."'"));
     }
 }
 

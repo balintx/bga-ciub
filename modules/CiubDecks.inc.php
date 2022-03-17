@@ -43,7 +43,7 @@ class DeckGenerator
 	*
 	*	@return array Shuffled cards, needs array_pop() to draw from the deck
 	*/
-	static function Generate(int $numPlayers, bool $isShortGame, callable $deckShufflerFunction = NULL, callable $rngFunction = NULL) : array
+	static function Generate($numPlayers, $isShortGame, $deckShufflerFunction = NULL, $rngFunction = NULL)
 	{
 		if (!is_callable($rngFunction))
 			$rngFunction = 'mt_rand';
@@ -82,7 +82,7 @@ class DeckGenerator
 
 		// Lambda function for swap-based shuffling in case none was provided
 		if (!is_callable($deckShufflerFunction))
-			$deckShufflerFunction = function(array $deck) use ($rngFunction) {
+			$deckShufflerFunction = function($deck) use ($rngFunction) {
 				$deckMaxIdx = count($deck) - 1;
 				// loop through all indexes, swap with a random idx (or itself)
 				for ($pos1 = 0; $pos1 < $deckMaxIdx; $pos1++) {
@@ -112,7 +112,7 @@ class DeckGenerator
 	*	@param bool $isShortGame flag for normal or short game
 	*
 	*/
-	static function GetReductionAmount(int $numPlayers, bool $isShortGame)
+	static function GetReductionAmount($numPlayers, $isShortGame)
 	{
 		switch ($numPlayers)
 		{
@@ -146,7 +146,7 @@ class DeckGenerator
 	*	@param bool $includeOwls whether to include cards with an Owl on them or not (short vs long game)
 	*
 	*/
-	static function GetFilteredDeckByLetter(string $cardLetter, bool $includeOwls) : array
+	static function GetFilteredDeckByLetter($cardLetter, $includeOwls)
 	{
 		return array_values( // reindex
 			array_filter(self::$FullDeck, new DeckFilter($cardLetter, $includeOwls))
@@ -161,7 +161,7 @@ class DeckGenerator
 	*	@param callable $rngFunction a function that can take two parameters (min, max) and return a random integer number N (min <= N <= max)
 	*
 	*/
-	static function RandomReduceArrayByNumberOfElements(array &$subject, int $reduceCount, callable $rngFunction)
+	static function RandomReduceArrayByNumberOfElements(&$subject, $reduceCount, $rngFunction)
 	{
 		$subjectCount = count($subject);
 		if ($reduceCount == 0)
@@ -212,13 +212,13 @@ class DeckFilter
 	public $cardLetter;
 	public $includeOwls;
 	
-	function __construct(string $cardLetter, bool $includeOwls)
+	function __construct($cardLetter, $includeOwls)
 	{
 		$this->cardLetter = $cardLetter;
 		$this->includeOwls = $includeOwls;
 	}
 	
-	function __invoke(array $card)
+	function __invoke($card)
 	{
 		return $card['cardLetter'] === $this->cardLetter && ($this->includeOwls || !$card['isOwl']);
 	}

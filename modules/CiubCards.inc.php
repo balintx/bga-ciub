@@ -57,8 +57,9 @@ class CardSolver
 { 
     /**
      * @param Cube[] $cubes
+     * @param string $requiredDices
      */
-    public static function Solve(array $cubes, string $requiredDices)
+    public static function Solve($cubes, $requiredDices)
     {
         $req = explode(',', $requiredDices);
         if (count($req) == 1)

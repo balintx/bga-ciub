@@ -156,21 +156,24 @@ public function p2DoDiceActionSwapDie()
 public function jmp_p2PromptDiceActionAdjustFace2()
 {
 	self::setAjaxMode();
-	$this->game->jmp_p2PromptDiceActionAdjustFace2();
+	$cube_id = self::getArg( "cube_id", AT_alphanum, true );
+	$this->game->jmp_p2PromptDiceActionAdjustFace2($cube_id);
 	self::ajaxResponse();
 }
 
 public function p2DoDiceActionAdjustFace()
 {
 	self::setAjaxMode();
-	$this->game->p2DoDiceActionAdjustFace();
+	$face = self::getArg( "face", AT_posint, true );
+	$this->game->p2DoDiceActionAdjustFace($face);
 	self::ajaxResponse();
 }
 
 public function p2DoPutDicesInTray()
 {
 	self::setAjaxMode();
-	$this->game->p2DoPutDicesInTray();
+	$cube_ids = self::getArg( "cube_ids", AT_alphanum, true );
+	$this->game->p2DoPutDicesInTray($cube_ids);
 	self::ajaxResponse();
 }
 
@@ -191,7 +194,8 @@ public function jmp_skipP3SpellWin()
 public function p3DoWinSpellCard()
 {
 	self::setAjaxMode();
-	$this->game->p3DoWinSpellCard();
+	$card_id = self::getArg( "card_id", AT_posint, true );
+	$this->game->p3DoWinSpellCard($card_id);
 	self::ajaxResponse();
 }
 
