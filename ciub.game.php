@@ -773,7 +773,7 @@ class Ciub extends Table
 				else
 				{
 					self::moveCube($targetDice, 'player_'.$activePlayer);
-					self::moveCube($initDice, 'player_'.$activePlayer);
+					self::moveCube($initDice, 'dicetray_'.$activePlayer);
 					self::notifyAllPlayers('diceaction_adjust', clienttranslate('${player_name} has adjusted ${cube_1} to ${cube_2} and put ${cube_3} in his/her dice tray'),
 						[
 							'player_id' => $activePlayer, 'player_name' => $this->getActivePlayerName(),
@@ -782,6 +782,7 @@ class Ciub extends Table
 						]
 					);
 				}
+				PlayerDB::mustSave($activePlayer, false);
 
 				$this->gamestate->nextState('chkHasP2DiceActions');
 			break;
@@ -1341,7 +1342,10 @@ class Ciub extends Table
 		if (count(CubeDB::getCubesAt('player_'.$activePlayer, true, true)) > 0)
 			$this->gamestate->nextState('chkMustP2SaveOneDice');
 		else
+		{
+			PlayerDB::saveCubes($activePlayer);
 			$this->gamestate->nextState('chkCanP3CastSpell');
+		}
 	}
 	
 	function stchkMustP2SaveOneDice()
