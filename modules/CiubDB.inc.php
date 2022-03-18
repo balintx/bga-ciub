@@ -299,11 +299,11 @@ abstract class PlayerDB extends APP_DBObject
     {
         if ($set_flag !== NULL)
         {
-            self::DbQuery(sprintf("UPDATE players SET player_saveswap = '%b' WHERE player_id = '%s'", $set_flag, $player_id));
+            self::DbQuery(sprintf("UPDATE player SET player_saveswap = '%b' WHERE player_id = '%s'", $set_flag, $player_id));
         }
         else
         {
-            return (bool)self::getUniqueValueFromDB("SELECT player_saveswap FROM players WHERE player_id = '".$player_id."'");
+            return (bool)self::getUniqueValueFromDB("SELECT player_saveswap FROM player WHERE player_id = '".$player_id."'");
         }
     }
 
@@ -311,22 +311,22 @@ abstract class PlayerDB extends APP_DBObject
     {
         if ($set_flag !== NULL)
         {
-            self::DbQuery(sprintf("UPDATE players SET player_won_card = '%b' WHERE player_id = '%s'", $set_flag, $player_id));
+            self::DbQuery(sprintf("UPDATE player SET player_won_card = '%b' WHERE player_id = '%s'", $set_flag, $player_id));
         }
         else
         {
-            return (bool)self::getUniqueValueFromDB("SELECT player_won_card FROM players WHERE player_id = '".$player_id."'");
+            return (bool)self::getUniqueValueFromDB("SELECT player_won_card FROM player WHERE player_id = '".$player_id."'");
         }
     }
 
     public static function saveCubes($player_id)
     {
-        self::DbQuery(sprintf("UPDATE players SET player_restore = '%s' WHERE player_id = '%s'", implode(',', LocationDB::getItemsAt('dicetray_'.$player_id)), $player_id));
+        self::DbQuery(sprintf("UPDATE player SET player_restore = '%s' WHERE player_id = '%s'", implode(',', LocationDB::getItemsAt('dicetray_'.$player_id)), $player_id));
     }
 
     public static function getSavedCubes($player_id)
     {
-        return explode(',', self::getUniqueValueFromDB("SELECT player_restore FROM players WHERE player_id = '".$player_id."'"));
+        return explode(',', self::getUniqueValueFromDB("SELECT player_restore FROM player WHERE player_id = '".$player_id."'"));
     }
 }
 

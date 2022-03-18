@@ -139,7 +139,7 @@ class Ciub extends Table
 		{
 			for ($j = 1; $j <= 5; $j++)
 			{
-				LocationDB::setItemLocation('player_'.$player_id, 'cube', 'cube_'.CubeColors::White.'_'.$i*5+$j);
+				LocationDB::setItemLocation('player_'.$player_id, 'cube', 'cube_'.(CubeColors::White).'_'.($i*5+$j));
 			}
 		}
 
