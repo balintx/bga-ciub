@@ -466,7 +466,7 @@ class Ciub extends Table
 				self::checkP1TopRowCard($card_id);
 
 				LocationDB::setItemLocation('card_' . $card_id, 'token', $playerId);
-				self::notifyAllPlayers('tokenPlaced', clienttranslate('${player_name} has placed his/her token on a card'), ['player_id' => $playerId,
+				self::notifyAllPlayers('tokenPlaced', clienttranslate('${player_name} has placed his/her token on ${card}'), ['player_id' => $playerId,
 				'player_name' => self::getActivePlayerName(), 'card_id' => $card_id]);
 				
 				$this->gamestate->nextState('p2Roll');
@@ -493,7 +493,7 @@ class Ciub extends Table
 				self::checkP1TopRowCard($card_id);
 
 				CardDB::moveTo($card_id, 'void');
-				self::notifyAllPlayers('topCardRemoved', clienttranslate('${player_name} has removed a card from the top row'), ['player_id' => $playerId, 'player_name' => self::getActivePlayerName(), 'card_id' => $card_id]);
+				self::notifyAllPlayers('topCardRemoved', clienttranslate('${player_name} has removed ${card} from the top row'), ['player_id' => $playerId, 'player_name' => self::getActivePlayerName(), 'card_id' => $card_id]);
 				
 				self::refillTopRow();
 
