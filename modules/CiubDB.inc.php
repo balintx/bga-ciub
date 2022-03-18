@@ -79,46 +79,25 @@ abstract class LocationDB extends APP_DBObject
      * Retrieves the most recent item at the specified location
      * 
      * @param mixed $location
-     * @param mixed $item_type (optional) Only select item of the specified type
+     * @param mixed $item_type only select item of the specified type
      * @return $item_id|array{item_type: string, item_id: mixed}|NULL The first item at the specified location.
      * When param $item_type is specified, only the id is returned instead of an array.
      */
     public static function getFirstItemAt($location, $item_type = NULL)
     {
-        if ($item_type !== NULL)
-        {
-            $item_type = " AND item_type = '".$item_type."'";
-            $column_list = 'item_id';
-        }
-        else 
-        {
-            $column_list = 'item_type, item_id';
-        }
-
-        return self::getObjectFromDB(sprintf("SELECT $column_list FROM item_locations WHERE location = '%s'".$item_type.' ORDER BY id LIMIT 1', $location));
+        return self::getUniqueValueFromDB(sprintf("SELECT item_id FROM item_locations WHERE location = '%s' AND item_type = '%s' ORDER BY id LIMIT 1", $location, $item_type));
     }
 
     /**
-     * Retrieve an array of the items at the specified location
+     * Retrieve an array of the item ids at the specified location
      * 
      * @param mixed $location
-     * @param mixed $item_type (optional) Only return items of the specified type
-     * @return array{item_type: string, item_id: mixed}[]|$item_id[] Array of items at the specified location.
-     * When param $item_type is specified, only a list of the item ids are returned.
+     * @param mixed $item_type only return items of the specified type
+     * @return $item_id[] Array of items at the specified location.
      */
     public static function getItemsAt($location, $item_type = NULL)
     {
-        if ($item_type !== NULL)
-        {
-            $item_type = " AND item_type = '".$item_type."'";
-            $column_list = 'item_id';
-        }
-        else 
-        {
-            $column_list = 'item_type, item_id';
-        }
-
-        return self::getObjectListFromDB(sprintf("SELECT $column_list FROM item_locations WHERE location = '%s'".$item_type, $location));
+        return self::getObjectListFromDB(sprintf("SELECT item_id FROM item_locations WHERE location = '%s'  AND item_type = '%s'", $location, $item_type), true);
     }
 }
 
@@ -321,7 +300,7 @@ abstract class PlayerDB extends APP_DBObject
 
     public static function saveCubes($player_id)
     {
-        self::DbQuery(sprintf("UPDATE player SET player_restore = '%s' WHERE player_id = '%s'", implode(',', LocationDB::getItemsAt('dicetray_'.$player_id)), $player_id));
+        self::DbQuery(sprintf("UPDATE player SET player_restore = '%s' WHERE player_id = '%s'", implode(',', LocationDB::getItemsAt('dicetray_'.$player_id, 'cube')), $player_id));
     }
 
     public static function getSavedCubes($player_id)

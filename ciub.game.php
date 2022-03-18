@@ -227,6 +227,18 @@ class Ciub extends Table
         In this space, you can put any utility methods useful for your game logic
     */
 
+	function call1()
+	{
+		$t = 4;
+		self::dump('t', $t);
+	}
+
+	function call2()
+	{
+		$v = LocationDB::getItemsAt(...['deck', 'card']);
+		self::dump('asd', $v);
+	}
+
 	function checkP1TopRowCard($card_id)
 	{
 		if (LocationDB::getItemLocation('card', $card_id) != 'row_top' || CardDB::hasToken($card_id))
