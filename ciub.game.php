@@ -829,7 +829,7 @@ class Ciub extends Table
 					if (!$dice->isActive())
 						throw new BgaUserException(self::_('You cannot target that dice'));
 
-					self::checkCubeLocation($dice->getId(), 'player_'.$activePlayer);
+					self::checkCubeLocation($dice->getId(), ['player_'.$activePlayer]);
 					self::moveCube($dice->getId(), 'dicetray_'.$activePlayer);
 					$valid = true;
 				

@@ -254,7 +254,7 @@ abstract class CubeDB extends APP_DBObject
             $cubes[$cubeData['id']] = $cube;
         }
 
-        return $cubes;
+        return $cubes ?? [];
     }
 
     public static function moveTo(Cube $cube, $location)
