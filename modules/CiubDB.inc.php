@@ -226,7 +226,7 @@ abstract class CubeDB extends APP_DBObject
     public static function getCubesAt($location, $include_inactive_cubes = false, $include_action_inactive_cubes = true)
     {
         $cubes = self::getCubes(LocationDB::getItemsAt($location, 'cube'));
-
+        self::trace(var_export($cubes, true));
         return array_filter($cubes,
             function(Cube $cube) use ($include_inactive_cubes, $include_action_inactive_cubes) {
                 return ($include_inactive_cubes || $cube->isActive()) && ($include_action_inactive_cubes || $cube->isActionActive());

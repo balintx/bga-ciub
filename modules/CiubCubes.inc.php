@@ -376,7 +376,7 @@ class BlueCube extends Cube
     }
 }
 
-/*
+
 
 // Test CubeFactory
 $TEST_CUBE_GREEN = CubeFactory::createFromId('cube_'.CubeColors::Green.'_3');
@@ -388,6 +388,9 @@ assert($TEST_CUBE_GREEN instanceof GreenCube);
 assert($TEST_CUBE_PURPLE instanceof PurpleCube);
 assert(CubeFactory::createFromId('cube_'.CubeColors::Yellow.'_3') instanceof YellowCube);
 assert(CubeFactory::createFromId('cube_'.CubeColors::White.'_3') instanceof WhiteCube);
+
+
+
 $TEST_CUBE_PURPLE->setFace(CubeFaces::Action_Adjust);
 assert($TEST_CUBE_PURPLE->isValidAdjust(CubeFaces::Action_Adjust, $TEST_CUBE_GREEN) === false);
 assert($TEST_CUBE_PURPLE->isValidAdjust(CubeFaces::Action_Skull, $TEST_CUBE_GREEN) === true);
@@ -395,4 +398,3 @@ assert($TEST_CUBE_GREEN->isValidAdjust(CubeFaces::Action_Reroll, $TEST_CUBE_PURP
 assert($TEST_CUBE_GREEN->isValidAdjust(CubeFaces::Action_Reroll, $TEST_CUBE_GREEN) === false);
 assert($TEST_CUBE_GREEN->isValidAdjust(CubeFaces::Numeric_1, $TEST_CUBE_PURPLE) === false);
 
-*/
